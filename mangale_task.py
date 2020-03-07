@@ -26,11 +26,11 @@ class Grid():
 
 class iters():
 	def __init__(self,grid,cost_d,cost_r,cost_s,in_val):#changed order of grid
-		stamina=[0,50,100]
+		stamina=[0,1,2]
 		arrows=[0,1,2,3]
-		health_MD=[0,25,50,75,100]
+		health_MD=[0,1,2,3,4]
 		
-		grid.states = [(s,a,h) for s in stamina for a in arrows for h in health_MD] #order fixed
+		grid.states = [(h,a,s) for h in health_MD for a in arrows for s in stamina] #order fixed
 		self.cost_s=cost_s#cost of shooting
 		self.cost_d=cost_d
 		self.cost_r=cost_r
@@ -38,34 +38,34 @@ class iters():
 		for state in grid.states:
 			grid.util_0[state] = float(0)
 			grid.util_1[state] = float(0)
-			if state[2]==0:#health value
-				grid.util_0[state] = float(10)
+			# if state[2]==0:#health value
+			# 	grid.util_0[state] = float(10)
 
 	def action_vals(self,state,grid,in_val):
 		s_val=0
 		r_val=0#recharge
 		d_val=0#dodge
-		s= state[0]
+		h= state[0]
 		a= state[1]
-		h= state[2]
+		s= state[2]
 		
-		if state[0] in [50,100] and state[1] in [1,2,3] and state[2] in [50,75,100]:
-			s_val = ((0.5)*float(grid.util_1[(s-50,a-1,h)]) + (0.5)*float(grid.util_1[(s-50,a-1,h-25)]))
+		if s in [1,2] and a in [1,2,3] and h in [1,2,3,4]:
+			s_val = ((0.5)*float(grid.util_1[(h,a-1,s-1)]) + (0.5)*float(grid.util_1[(h-1,a-1,s-1)]))
 
-		if state[0] in [0,50]:
-			r_val = ((0.8)*float(grid.util_1[(s+50,a,h)]) + (0.2)*float(grid.util_1[(s,a,h)]))
+		if s in [0,1]:
+			r_val = ((0.8)*float(grid.util_1[(h,a,s+1)]) + (0.2)*float(grid.util_1[(h,a,s)]))
 		
 
-		if state[0] == 100:
+		if s == 2:
 			if a==3:
-				d_val = float(((0.8)*float(grid.util_1[(50,a,h)]) + (0.2)*float(grid.util_1[(0,a,h)])))
+				d_val = float(((0.8)*float(grid.util_1[(h,a,1)]) + (0.2)*float(grid.util_1[(h,a,0)])))
 			else:
-				d_val = float(float(0.8*0.8)*float(grid.util_1[(50,a+1,h)]) + float(0.8*0.2)*float(grid.util_1[(50,a,h)]) + float(0.2*0.8)*float(grid.util_1[(0,a+1,h)]) + float(0.2*0.2)*float(grid.util_1[(0,a,h)]))
-		if s == 50:
+				d_val = float(float(0.8*0.8)*float(grid.util_1[(h,a+1,1)]) + float(0.8*0.2)*float(grid.util_1[(h,a,1)]) + float(0.2*0.8)*float(grid.util_1[(h,a+1,0)]) + float(0.2*0.2)*float(grid.util_1[(h,a,0)]))
+		if s == 1:
 			if a==3:
-				d_val = float(grid.util_1[(0,a,h)])
+				d_val = float(grid.util_1[(h,a,0)])
 			else:
-				d_val = float(float(0.8)*float(grid.util_1[(0,a+1,h)]) + float(0.2)*float(grid.util_1[(0,a,h)]))
+				d_val = float(float(0.8)*float(grid.util_1[(h,a+1,0)]) + float(0.2)*float(grid.util_1[(h,a,0)]))
 
 		return s_val,r_val,d_val
 
@@ -76,7 +76,7 @@ class iters():
 	def choose_action(self,state,grid,in_val):
 		ret_ac = 10
 		s_val,r_val,d_val = self.action_vals(state,grid,1)
-		s_val = self.cost_s + 0.5*10 + grid.gamma*s_val
+		s_val = self.cost_s + grid.gamma*s_val
 		r_val = self.cost_r + grid.gamma*r_val
 		d_val = self.cost_d + grid.gamma*d_val
 
@@ -97,9 +97,9 @@ class iters():
 			# s_val,r_val,d_val = self.action_vals(state,grid,1)
 			action = ''
 			ac, val = self.choose_action(state,grid,1)
-			s= state[0]
+			h= state[0]
 			a= state[1]
-			h= state[2]
+			s= state[2]
 			if ac==1:
 				action='SHOOT'
 			elif ac==2:
@@ -107,8 +107,11 @@ class iters():
 			elif ac==3:
 				action='DODGE'
 			# val = float(max(self.cost_s + grid.gamma*s_val,self.cost_r + grid.gamma*r_val,self.cost_d + grid.gamma*d_val))
-			if state[2]==0:
+			if h==1 and ac==1:
 				val += float(10)
+				# action = '-1'
+			if h==0:
+				val = 0
 				action = '-1'
 
 			
@@ -117,16 +120,21 @@ class iters():
 			grid.util_0[state] = val
 
 
-			print('('+str(int(s/50))+','+str(a)+','+str(int(h/25))+'):'+str(action)+'=['+str(round(grid.util_0[state],3))+']')
+			print('('+str(int(h))+','+str(a)+','+str(int(s))+'):'+str(action)+'=['+str(round(grid.util_0[state],3))+']')
 		pass
 
 if __name__=="__main__":
         #filename = open("path")
 	# print("dsljbo", file = filename)
+	stepcost = -20#update
 	grid = Grid(gamma=0.99,be=0.001)#changed al to be
-	it = iters(grid,cost_s=-10,cost_d=-10,cost_r=-10,in_val = 0)#in_val wasn't added. put dummy. recheck
-	i=1
+	it = iters(grid,cost_s=stepcost,cost_d=stepcost,cost_r=stepcost,in_val = 0)#in_val wasn't added. put dummy. recheck
+	i=0
 	# print('Gamma = '+str(mdp.gamma)+'\tDelta = '+str(mdp.delta))
+	print('iteration='+str(i))
+	grid.update_util()
+	it.update_utils(grid,1)
+	i += 1
 	while(grid.check_converged()==False):
 		print('iteration='+str(i))
 
