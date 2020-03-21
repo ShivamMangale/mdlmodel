@@ -64,6 +64,8 @@ def get_fitness(inp):
     for i in inp:
         err = get_errors('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
         res.append(err)
+        if err[0] + err[1] < 1e+15:
+            submit_status = submit('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
     # print(err)
     # assert len(err) == 2
     return list(res)
@@ -114,5 +116,18 @@ def do_cross(population, req):
                 print("did cross for", i, " ", j)
                 if co >= req:
                     return population
+    
+    return population
+
+def do_mutate(population, req):
+    for co in range(req):
+        new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
+        for l in range(11):
+            # new[0][l] = population[co][l]
+            new[0][l] = population[0][l]
+        k = random.randrange(0,10,1)
+        new[0][k] = random.random()*random.randrange(-10,10)/1000
+        new[0][k + 1] = random.random()*random.randrange(-10,10)/1000
+        population = np.append(population, new, axis=0)
     
     return population
