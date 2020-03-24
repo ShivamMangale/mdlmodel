@@ -159,13 +159,28 @@ def do_specialaddition(population, req):
         new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
         for l in range(11):
             new[0][l] = population[co][l]
+            print(new[0][l], end='')
             chpow = 0
+            # while abs(new[0][l]/pow(10,-chpow)) < 1:
+            #     chpow += 1
+            # ensure power same of random generated and actual. wrong right now
+            # new[0][l] += random.random()*random.randrange(-10,10)/pow(10,-(chpow-1))
+            # new[0][l] = max(new[0][l],-10)
+            # new[0][l] = min(new[0][l],10)
             while abs(new[0][l]/pow(10,-chpow)) < 1:
                 chpow += 1
-            # ensure power same of random generated and actual. wrong right now
-            new[0][l] += random.random()*random.randrange(-10,10)/pow(10,-(chpow-1))
-            new[0][l] = max(new[0][l],-10)
-            new[0][l] = min(new[0][l],10)
-            population = np.append(population, new, axis=0)
+            # print(new[0][l])
+            print(chpow, "==chpow")
+            for m in range(3):
+                if l+m > 10:
+                    break
+                lo = random.randrange(-10,10)
+                print(lo, " ", m)
+                new[0][l+m] += lo/pow(10,chpow+m)
+                new[0][l+m] = max(new[0][l+m],-10)
+                new[0][l+m] = min(new[0][l+m],10)
+        print("did special addition")
+        print(new)
+        population = np.append(population, new, axis=0)
 
     return population

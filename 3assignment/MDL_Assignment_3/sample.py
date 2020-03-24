@@ -10,9 +10,14 @@ for l in range(11):
     while abs(new[0][l]/pow(10,-chpow)) < 1:
         chpow += 1
         # print(new[0][l])
-    print(chpow)
-    new[0][l] += random.random()*random.randrange(-10,10)/pow(10,-chpow+1)
-    new[0][l] = max(new[0][l],-10)
-    new[0][l] = min(new[0][l],10)
+    print(chpow, "==chpow")
+    for m in range(3):
+        if l+m > 10:
+            break
+        lo = random.randrange(-10,10)
+        print(lo, " ", m)
+        new[0][l+m] += lo/pow(10,chpow+m)
+        new[0][l+m] = max(new[0][l+m],-10)
+        new[0][l+m] = min(new[0][l+m],10)
 
 print(new)
