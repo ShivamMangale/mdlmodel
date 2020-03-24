@@ -85,7 +85,7 @@ def get_fitness(inp):
 def sum_errors(fitness):
     newfitness = []
     for i in range(len(fitness)):
-        newfitness.append(fitness[i][0] + fitness[i][1])
+        newfitness.append((0.9)*fitness[i][0] + fitness[i][1])
     
     return newfitness
 
@@ -93,8 +93,8 @@ def do_cull(population, fitness, req):
     # Selecting the best individuals in the current generation as parents for producing the offspring of the next generation.
     parents = np.empty((req, population.shape[1]))
     for parent_num in range(req):
-        print(fitness)
-        print(population)
+        # print(fitness)
+        # print(population)
         min_fitness_idx = np.where(fitness == np.amin(fitness))
         min_fitness_idx = min_fitness_idx[0][0]
         parents[parent_num, :] = population[min_fitness_idx, :]
@@ -110,12 +110,15 @@ def do_cross(population, req):
                 for k in range(11):
                     new[0][k] = population[i][k] + population[j][k]
                     new[0][k] = new[0][k]/2
-                    if k < 3:
-                        new[0][k] += random.random()*random.randrange(-10,10)/1000
-                    elif k < 7:
-                        new[0][k] += random.random()*random.randrange(-10,10)/1000000
-                    else:
-                        new[0][k] += random.random()*random.randrange(-10,10)/100000000
+                    # if k < 3:
+                    #     new[0][k] += random.random()*random.randrange(-10,10)/100
+                    # elif k < 7:
+                    #     new[0][k] += random.random()*random.randrange(-10,10)/100000
+                    # else:
+                    #     new[0][k] += random.random()*random.randrange(-10,10)/1000000000
+                    new[0][k] += random.random()*random.randrange(-10,10)/pow(10,13)
+                    new[0][k] = max(new[0][k],-10)
+                    new[0][k] = min(new[0][k],10)
                 population = np.append(population, new, axis=0)
                 co += 1
                 print("did cross for", i, " ", j)
@@ -128,15 +131,41 @@ def do_mutate(population, req):
     for co in range(req):
         new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
         for l in range(11):
-            # new[0][l] = population[co][l]
+            # new[0][l] = population[0][l]
             new[0][l] = population[co][l]
         k = random.randrange(0,6,1)
-        new[0][k] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,6,1))
-        new[0][k + 1] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,6,1))
-        k = random.randrange(5,10,1)
-        #did assignment for early runs. afterwards changed to updation
-        new[0][k] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(6,14,1))
-        new[0][k + 1] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(6,14,1))
+        # new[0][k] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,4,1))
+        # new[0][k + 1] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,4,1))
+        new[0][k] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
+        new[0][k + 1] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
+        new[0][k] = max(new[0][k],-10)
+        new[0][k] = min(new[0][k],10)
+        new[0][k+1] = max(new[0][k+1],-10)
+        new[0][k+1] = min(new[0][k+1],10)
+        k = random.randrange(6,10,1)
+        #did assignment for early runs. afterwards changed to updation..... updation fucks up
+        new[0][k] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(10,15,1))
+        new[0][k + 1] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(10,15,1))
+        new[0][k] = max(new[0][k],-10)
+        new[0][k] = min(new[0][k],10)
+        new[0][k+1] = max(new[0][k+1],-10)
+        new[0][k+1] = min(new[0][k+1],10)
         population = np.append(population, new, axis=0)
     
+    return population
+
+def do_specialaddition(population, req):
+    for co in range(req):
+        new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
+        for l in range(11):
+            new[0][l] = population[co][l]
+            chpow = 0
+            while abs(new[0][l]/pow(10,-chpow)) < 1:
+                chpow += 1
+            # ensure power same of random generated and actual. wrong right now
+            new[0][l] += random.random()*random.randrange(-10,10)/pow(10,-(chpow-1))
+            new[0][l] = max(new[0][l],-10)
+            new[0][l] = min(new[0][l],10)
+            population = np.append(population, new, axis=0)
+
     return population
