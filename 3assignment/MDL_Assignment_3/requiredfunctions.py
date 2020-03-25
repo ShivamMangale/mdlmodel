@@ -61,32 +61,28 @@ def send_request(id, vector, path):
 
 def get_fitness(inp):
     res = []
+    co = 0
     for i in inp:
         err = get_errors('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
         res.append(err)
-        if err[0] + err[1] < 1e+15:
+        if err[0] + err[1] < 3e+7 and co < len(inp)/3:
             submit_status = submit('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
+            print("submitted")
+        co += 1
     # print(err)
     # assert len(err) == 2
     return list(res)
 
-# def do_cull(population, fitness, req):
-#     newpopulation = []
-#     for i in range(req):
-#         maxfit = max(fitness)
-#         for ind in range(len(population)):
-#             if fitness[ind] == maxfit:
-#                 newpopulation.append(population.delete(ind))
-#                 ignore = fitness.pop(ind)
-#                 break
-    
-#     return newpopulation
-
-def sum_errors(fitness):
+def sum_errors(fitness, round):
     newfitness = []
-    for i in range(len(fitness)):
-        newfitness.append((0.9)*fitness[i][0] + fitness[i][1])
-    
+    # oscillate between the weights given to each to ensure no overfit to either
+    if round%2==1:
+        for i in range(len(fitness)):
+            newfitness.append((0.9)*fitness[i][0] + fitness[i][1])
+    else:
+        for i in range(len(fitness)):
+            newfitness.append(fitness[i][0] + (0.9)*fitness[i][1])
+
     return newfitness
 
 def do_cull(population, fitness, req):
@@ -103,8 +99,10 @@ def do_cull(population, fitness, req):
 
 def do_cross(population, req):
     co = 0
+    # for i in range(int(len(population)/2) + 1):
+    #     for j in range(i+1,int(len(population)/2) + 1):
     for i in range(int(len(population)/2) + 1):
-        for j in range(i+1,int(len(population)/2) + 1):
+        for j in range(i+1,int(len(population)/2) - 8 + i):
             if i != j:
                 new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
                 for k in range(11):
@@ -144,8 +142,8 @@ def do_mutate(population, req):
         new[0][k+1] = min(new[0][k+1],10)
         k = random.randrange(6,10,1)
         #did assignment for early runs. afterwards changed to updation..... updation fucks up
-        new[0][k] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(10,15,1))
-        new[0][k + 1] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(10,15,1))
+        new[0][k] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
+        new[0][k + 1] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
         new[0][k] = max(new[0][k],-10)
         new[0][k] = min(new[0][k],10)
         new[0][k+1] = max(new[0][k+1],-10)
@@ -154,7 +152,7 @@ def do_mutate(population, req):
     
     return population
 
-def do_specialaddition(population, req):
+def do_specialaddition(population, req, mag):
     for co in range(req):
         new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
         for l in range(11):
@@ -171,7 +169,7 @@ def do_specialaddition(population, req):
                 chpow += 1
             # print(new[0][l])
             print(chpow, "==chpow")
-            for m in range(3):
+            for m in range(mag,3 + mag):
                 if l+m > 10:
                     break
                 lo = random.randrange(-10,10)
