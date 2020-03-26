@@ -136,7 +136,7 @@ filename23 = open("./outputs/task_2_part_3_trace.txt", 'w')
 
 # print("dsljbo", file = filename)
 #task 1
-stepcost = -10#update
+stepcost = -5#update
 grid = Grid(gamma=0.99,be=0.001)#changed al to be
 it = iters(grid,cost_s=stepcost,cost_d=stepcost,cost_r=stepcost,in_val = 0)#in_val wasn't added. put dummy. recheck
 i=0

@@ -158,6 +158,10 @@ print('iteration='+str(i), file=filename)
 # print("State\t\tDV\tSV\tRV\tU\tVal")
 grid.update_util()
 it.update_utils(grid,1,filename)
+print("\n", file=filename)
+
+# print(grid.action)
+
 
 
 #task2_1
@@ -184,7 +188,7 @@ print('iteration='+str(i), file=filename)
 # print("State\t\tDV\tSV\tRV\tU\tVal")
 grid1.update_util()
 it.update_utils(grid1,1,filename)
-# print("\n", file=filename)
+print("\n", file=filename)
 
 #task2_2
 filename = open("./outputs/task_2_part_2_trace.txt", 'w')
@@ -211,7 +215,7 @@ print('iteration='+str(i), file=filename)
 # print("State\t\tDV\tSV\tRV\tU\tVal")
 grid2.update_util()
 it.update_utils(grid2,1,filename)
-# print("\n", file=filename)
+print("\n", file=filename)
 
 #task2_3
 filename = open("./outputs/task_2_part_3_trace.txt", 'w')
@@ -237,4 +241,4 @@ print('iteration='+str(i), file=filename)
 # print("State\t\tDV\tSV\tRV\tU\tVal")
 grid3.update_util()
 it.update_utils(grid3,1,filename)
-# print("\n", file=filename)
+print("\n", file=filename)
