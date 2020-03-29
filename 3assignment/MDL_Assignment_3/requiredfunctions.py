@@ -43,22 +43,6 @@ def send_request(id, vector, path):
 
     return response
 
-# if __name__ == "__main__":
-#     """
-#     Replace "test" with your secret ID and just run this file 
-#     to verify that the server is working for your ID.
-#     """
-
-#     # inp = [0.0, 0.1240317450077846, -6.211941063144333, 0.04933903144709126, 0.03810848157715883, 8.132366097133624e-05, -6.018769160916912e-05, -1.251585565299179e-07, 3.484096383229681e-08, 4.1614924993407104e-11, -6.732420176902565e-12]
-#     inp = [1e-08,1e-08,1e-08,1e-08,1e-08,1e-08,1e-08,1e-08,1e-08,1e-08,1e-08]
-
-#     err = get_errors('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(inp))
-#     print(err)
-#     assert len(err) == 2
-
-#     submit_status = submit('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(inp))
-#     assert "submitted" in submit_status
-
 def get_fitness(inp):
     res = []
     co = 0
@@ -76,12 +60,13 @@ def get_fitness(inp):
 def sum_errors(fitness, round):
     newfitness = []
     # oscillate between the weights given to each to ensure no overfit to either
-    if round%2==1:
-        for i in range(len(fitness)):
-            newfitness.append((0.9)*fitness[i][0] + fitness[i][1])
-    else:
-        for i in range(len(fitness)):
-            newfitness.append(fitness[i][0] + (0.9)*fitness[i][1])
+    # if round%2==1:
+    for i in range(len(fitness)):
+        # newfitness.append((0.4)*fitness[i][0] + (0.6)*fitness[i][1])
+        newfitness.append((0.45)*fitness[i][0] + (0.5)*fitness[i][1])
+    # else:
+    #     for i in range(len(fitness)):
+    #         newfitness.append((0.6)*fitness[i][0] + (0.4)*fitness[i][1])
 
     return newfitness
 
@@ -89,8 +74,6 @@ def do_cull(population, fitness, req):
     # Selecting the best individuals in the current generation as parents for producing the offspring of the next generation.
     parents = np.empty((req, population.shape[1]))
     for parent_num in range(req):
-        # print(fitness)
-        # print(population)
         min_fitness_idx = np.where(fitness == np.amin(fitness))
         min_fitness_idx = min_fitness_idx[0][0]
         parents[parent_num, :] = population[min_fitness_idx, :]
@@ -99,8 +82,6 @@ def do_cull(population, fitness, req):
 
 def do_cross(population, req):
     co = 0
-    # for i in range(int(len(population)/2) + 1):
-    #     for j in range(i+1,int(len(population)/2) + 1):
     for i in range(int(len(population)/2) + 1):
         for j in range(i+1,int(len(population)/2) - 8 + i):
             if i != j:
@@ -114,12 +95,12 @@ def do_cross(population, req):
                     #     new[0][k] += random.random()*random.randrange(-10,10)/100000
                     # else:
                     #     new[0][k] += random.random()*random.randrange(-10,10)/1000000000
-                    new[0][k] += random.random()*random.randrange(-10,10)/pow(10,13)
+                    if new[0][k] == population[i][k] or random.randrange(0,2,1) == 1:
+                        new[0][k] += random.random()*(random.randrange(-10,10) + random.randrange(-10,10))/pow(8,13)
                     new[0][k] = max(new[0][k],-10)
                     new[0][k] = min(new[0][k],10)
                 population = np.append(population, new, axis=0)
                 co += 1
-                print("did cross for", i, " ", j)
                 if co >= req:
                     return population
     
@@ -131,19 +112,19 @@ def do_mutate(population, req):
         for l in range(11):
             # new[0][l] = population[0][l]
             new[0][l] = population[co][l]
-        k = random.randrange(0,6,1)
+        k = random.randrange(0,10,1)
         # new[0][k] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,4,1))
         # new[0][k + 1] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,4,1))
-        new[0][k] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
-        new[0][k + 1] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
+        new[0][k] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(0,8,1))
+        new[0][k + 1] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(0,8,1))
         new[0][k] = max(new[0][k],-10)
         new[0][k] = min(new[0][k],10)
         new[0][k+1] = max(new[0][k+1],-10)
         new[0][k+1] = min(new[0][k+1],10)
-        k = random.randrange(6,10,1)
+        k = random.randrange(0,10,1)
         #did assignment for early runs. afterwards changed to updation..... updation fucks up
-        new[0][k] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
-        new[0][k + 1] = random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,15,1))
+        new[0][k] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(8,15,1))
+        new[0][k + 1] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(8,15,1))
         new[0][k] = max(new[0][k],-10)
         new[0][k] = min(new[0][k],10)
         new[0][k+1] = max(new[0][k+1],-10)
@@ -157,28 +138,25 @@ def do_specialaddition(population, req, mag):
         new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
         for l in range(11):
             new[0][l] = population[co][l]
-            print(new[0][l], end='')
             chpow = 0
-            # while abs(new[0][l]/pow(10,-chpow)) < 1:
-            #     chpow += 1
-            # ensure power same of random generated and actual. wrong right now
-            # new[0][l] += random.random()*random.randrange(-10,10)/pow(10,-(chpow-1))
-            # new[0][l] = max(new[0][l],-10)
-            # new[0][l] = min(new[0][l],10)
             while abs(new[0][l]/pow(10,-chpow)) < 1:
                 chpow += 1
-            # print(new[0][l])
-            print(chpow, "==chpow")
             for m in range(mag,3 + mag):
                 if l+m > 10:
                     break
-                lo = random.randrange(-10,10)
-                print(lo, " ", m)
+                lo = random.randrange(-10,10) + random.randrange(-10,10)
                 new[0][l+m] += lo/pow(10,chpow+m)
                 new[0][l+m] = max(new[0][l+m],-10)
                 new[0][l+m] = min(new[0][l+m],10)
-        print("did special addition")
-        print(new)
         population = np.append(population, new, axis=0)
 
     return population
+
+def check(population):
+    new1 = population[0]
+    new2 = population[20]
+    if np.array_equal(new1,new2):
+        print("useless now")
+        return 1
+    else:
+        return 0

@@ -1,5 +1,5 @@
 import numpy
-from requiredfunctions import get_fitness, do_cull, sum_errors, do_cross, do_mutate, do_specialaddition
+from requiredfunctions import get_fitness, do_cull, sum_errors, do_cross, do_mutate, do_specialaddition, check
 import os
 
 filename = open("./records.txt", 'w')
@@ -9,32 +9,32 @@ data = open("./data.txt", 'w')
 # Number of the weights we are looking to optimize.
 num_weights = 11
 
-sol_per_pop = 25
+sol_per_pop = 50
 num_parents_mating = 5
 
 # Defining the population size.
 pop_size = (sol_per_pop,num_weights) # The population will have sol_per_pop chromosome where each chromosome has num_weights genes.
 # inp = input("Enter choice:")
-do_size = (sol_per_pop-14,num_weights)
+do_size = (sol_per_pop-28,num_weights)
 #initializing
 option = 1
 if option == 1:
-    new_population = numpy.random.uniform(low=-1e-7, high=1e-7, size=pop_size)
-    # for d in range(2):
-    #     another1 = numpy.random.uniform(low=-1e-8, high=1e-8, size=(1,11))
-    #     another2 = numpy.random.uniform(low=-1e-9, high=1e-9, size=(1,11))
-    #     another3 = numpy.random.uniform(low=-1e-10, high=1e-10, size=(1,11))
-    #     another4 = numpy.random.uniform(low=-1e-11, high=1e-11, size=(1,11))
-    #     another5 = numpy.random.uniform(low=-1e-12, high=1e-12, size=(1,11))
-    #     # another6 = numpy.random.uniform(low=-1e-13, high=1e-13, size=(1,11))
-    #     # another7 = numpy.random.uniform(low=-1e-14, high=1e-14, size=(1,11))
-    #     new_population = numpy.append(new_population, another1, axis=0)
-    #     new_population = numpy.append(new_population, another2, axis=0)
-    #     new_population = numpy.append(new_population, another3, axis=0)
-    #     new_population = numpy.append(new_population, another4, axis=0)
-    #     new_population = numpy.append(new_population, another5, axis=0)
-    #     # new_population = numpy.append(new_population, another6, axis=0)
-    #     # new_population = numpy.append(new_population, another7, axis=0)
+    new_population = numpy.random.uniform(low=-1e-2, high=1e-2, size=pop_size)
+    for d in range(4):
+        another1 = numpy.random.uniform(low=-1e-8, high=1e-8, size=(1,11))
+        another2 = numpy.random.uniform(low=-1e-9, high=1e-9, size=(1,11))
+        another3 = numpy.random.uniform(low=-1e-10, high=1e-10, size=(1,11))
+        another4 = numpy.random.uniform(low=-1e-11, high=1e-11, size=(1,11))
+        another5 = numpy.random.uniform(low=-1e-12, high=1e-12, size=(1,11))
+        another6 = numpy.random.uniform(low=-1e-13, high=1e-13, size=(1,11))
+        another7 = numpy.random.uniform(low=-1e-14, high=1e-14, size=(1,11))
+        new_population = numpy.append(new_population, another1, axis=0)
+        new_population = numpy.append(new_population, another2, axis=0)
+        new_population = numpy.append(new_population, another3, axis=0)
+        new_population = numpy.append(new_population, another4, axis=0)
+        new_population = numpy.append(new_population, another5, axis=0)
+        new_population = numpy.append(new_population, another6, axis=0)
+        new_population = numpy.append(new_population, another7, axis=0)
     # another8 = [[1.27178083e-007,-5.79570589e-014,-2.71823500e-004,1.34836792e-006,-2.80069303e-007,-7.08940158e-014,-3.76906638e-013,5.48366984e-013,4.94065646e-323,5.56197895e-012,1.44773457e-015]]
     # new_population = numpy.append(new_population, another8, axis=0)
     # another9 = [[0.0, 0.1240317450077846, -6.211941063144333, 0.04933903144709126, 0.03810848157715883, 8.132366097133624e-05, -6.018769160916912e-05, -1.251585565299179e-07, 3.484096383229681e-08, 4.1614924993407104e-11, -6.732420176902565e-12]]
@@ -55,31 +55,33 @@ else:
 fitness = get_fitness(new_population)
 print(fitness)
 fitness = sum_errors(fitness, 0)
-new_population = do_cull(new_population, fitness, 12)
+new_population = do_cull(new_population, fitness, 35)
 print(new_population)
 
 # do one run in which you include the good vectors too and tweak them through special addition
-generations = 40
+generations = 60
 for i in range(generations):
     print(i)
-    if i<34:
-        new_population = do_cross(new_population, 8)
-        new_population = do_mutate(new_population, 5)
-    elif i < -1:
-        new_population = do_cross(new_population, 5)
+    if i<25:
+        new_population = do_cross(new_population, 11)
+        new_population = do_mutate(new_population, 4)
+    elif i<45:
+        new_population = do_cross(new_population, 6)
         new_population = do_mutate(new_population, 3)
-        new_population = do_specialaddition(new_population, 5, 0)
+        new_population = do_specialaddition(new_population, 6, 0)
     else:
-        new_population = do_cross(new_population, 2)
-        new_population = do_specialaddition(new_population, 5, 0)
-        new_population = do_specialaddition(new_population, 25-12-2-5, 1)
+        new_population = do_cross(new_population, 5)
+        new_population = do_specialaddition(new_population, 3, 0)
+        new_population = do_specialaddition(new_population, 50-35-5-3, 1)
     # do 6 each and do better "mutation" on top 3 i.e. tweak in their order only(try repeated division till you find a integer on division with 10)
+    if check(new_population) == 1:
+        break
     print(new_population)
     fitness = get_fitness(new_population)
     print(fitness)
     fitness = sum_errors(fitness, i)
     if i != generations - 1:
-        new_population = do_cull(new_population, fitness, 12)
+        new_population = do_cull(new_population, fitness, 35)
         print(new_population)
     else:
         for i in range(len(new_population)):
