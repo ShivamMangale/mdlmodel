@@ -2,25 +2,25 @@ import numpy
 from secondrequiredfunctions import get_fitness, do_cull, sum_errors, do_cross, do_mutate, do_specialaddition, check, make_probdist
 import os
 
-filename = open("./records.txt", 'a')
+filename = open("./secondrecords.txt", 'a')
 data = open("./data.txt", 'a')
 
 # print("",file=filename)
 # Number of the weights we are looking to optimize.
 num_weights = 11
 
-sol_per_pop = 10
+sol_per_pop = 30
 num_parents_mating = 5
 
 # Defining the population size.
 pop_size = (sol_per_pop,num_weights) # The population will have sol_per_pop chromosome where each chromosome has num_weights genes.
 # inp = input("Enter choice:")
-do_size = (sol_per_pop-9,num_weights)
+do_size = (sol_per_pop-27,num_weights)
 #initializing
 option = 1
 if option == 1:
     new_population = numpy.random.uniform(low=-1e-3, high=1e-3, size=do_size)
-    for d in range(1):
+    for d in range(3):
         another9 = numpy.random.uniform(low=-1e-6, high=1e-6, size=(1,11))
         another1 = numpy.random.uniform(low=-1e-8, high=1e-8, size=(1,11))
         another2 = numpy.random.uniform(low=-1e-9, high=1e-9, size=(1,11))
@@ -47,8 +47,8 @@ if option == 1:
     # new_population = numpy.append(new_population, another10, axis=0)
     # another11 = [[8.16617466e-15,4.31953160e-15,-2.47616056e-16,5.83942304e-02,-5.05318356e-10,3.97767799e-14,-9.20517174e-15,7.23898252e-11,-1.77199749e-11,-0.20947273e-12,0.00013298e-14]]
     # new_population = numpy.append(new_population, another11, axis=0)
-    print("Initial ppulation")
-    print(new_population)
+    print("Initial population", file = filename)
+    print(new_population, file = filename)
 else:
     new_population = [[8.16617466e-15,4.31953160e-15,-2.47616056e-16,5.83942304e-02,-5.05318356e-10,3.97767799e-14,-9.20517174e-15,7.23898252e-11,-1.77199749e-11,-0.20947273e-12,0.00013298e-14]]
     # [[5.00000000e+00,8.00000000e+00,6.21194106e+00,-7.33461650e-04,-8.41762133e-04,8.13236610e-05,-6.01876916e-05,-1.251557e-07,3.48409638e-08,4.16149250e-11,-6.7324e-12],[7.00000000e+00,7.00000000e+00,6.21194106e+00,-5.45919679e-04,-5.65563615e-03,8.13236610e-05,-6.01876916e-05,-1.25158557e-06,3.48409638e-08,4.16150e-11,-6.72018e-12],[7.00000000e+00,7.00000000e+00,6.21194106e+00,4.89238473e-03,-6.61614151e-03,8.13236610e-05,-6.01876916e-05,-1.25158557e-07,3e-08,-4.16149250e-11,-6.73242018e-12],[7.00000000e+00,7.00005432000e+00,4.4106e+00,-9.47763490e-04,-7.15679024e-03,8.13236610e-05,-6.01876916e-05,-1.25158557e-06,3.48409638e-08,4.16149250e-11,3.73242018e-12],[7.00000000e+00,7.00000000e+00,1.63578907e-03,5.50781091e-03,-7.15679024e-03,8.13236610e-05,-6.01876916e-05,-3.258557e-07,3.48409638e-08,5.16149250e-11,-8.73242018e-12]]
@@ -57,16 +57,17 @@ else:
     print(new_population)
 
 fitness = get_fitness(new_population, 0)
-print(fitness)
+print(fitness, file = filename)
 fitness = sum_errors(fitness, 0)
 probdist = make_probdist(fitness)
-new_population, fitness = do_cull(new_population, fitness, 5, probdist)
-print("new fitness")
-print(fitness)
+new_population, fitness = do_cull(new_population, fitness, 20, probdist)
+print("Initial Population 0:", file = filename)
+print(new_population, file = filename)
+print("new fitness", file = filename)
+print(fitness, file = filename)
 probdist = make_probdist(fitness)
-# print("new probdist outside")
-# print(probdist)
-# print(new_population)
+print("new probdist outside", file=filename)
+print(probdist, file=filename)
 
 # do one run in which you include the good vectors too and tweak them through special addition
 # make some coeffs 0
@@ -74,32 +75,35 @@ generations = 30
 for i in range(generations):
     print(i)
     if i<15:
+        new_population = do_cross(new_population, 6, probdist)
+        new_population = do_mutate(new_population, 4)
+    elif i<23:
+        new_population = do_cross(new_population, 6, probdist)
+        new_population = do_mutate(new_population, 2)
+        new_population = do_specialaddition(new_population, 2, 0)
+    else:
         new_population = do_cross(new_population, 3, probdist)
         new_population = do_mutate(new_population, 2)
-    elif i<23:
-        new_population = do_cross(new_population, 3, probdist)
-        new_population = do_mutate(new_population, 1)
-        new_population = do_specialaddition(new_population, 1, 0)
-    else:
-        new_population = do_cross(new_population, 2, probdist)
-        new_population = do_mutate(new_population, 1)
-        new_population = do_specialaddition(new_population, 10-5-2-1, 0)
+        new_population = do_specialaddition(new_population, 30-20-3-2, 0)
         # new_population = do_specialaddition(new_population, 50-35-4-3-2, 1)
     # do 6 each and do better "mutation" on top 3 i.e. tweak in their order only(try repeated division till you find a integer on division with 10)
     # if check(new_population) == 1:
     #     break
-    # print(new_population)
+    print("Final population for ", i+1, ": ", file=filename)
+    print(new_population, file=filename)
     fitness = get_fitness(new_population, 1)
     if i != generations - 1:
-        print(fitness)
         fitness = sum_errors(fitness, i)
         probdist = make_probdist(fitness)
         print(i," -0-813")
         print(probdist)
-        new_population, fitness = do_cull(new_population, fitness, 5, probdist)
+        new_population, fitness = do_cull(new_population, fitness, 20, probdist)
         probdist = make_probdist(fitness)
         # print(probdist)
-        # print(new_population)
+        print("Initial Population ", i+1," :", file=filename)
+        print(new_population, file=filename)
+        print("fitness: ", file=filename)
+        print(fitness, file=filename)
     else:
         for i in range(len(new_population)):
             print(new_population[i])

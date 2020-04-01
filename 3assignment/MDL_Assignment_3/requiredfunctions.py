@@ -67,7 +67,7 @@ def sum_errors(fitness, round):
     # if round%2==1:
     for i in range(len(fitness)):
         # newfitness.append((0.4)*fitness[i][0] + (0.6)*fitness[i][1])
-        newfitness.append((0.45)*fitness[i][0] + (0.5)*fitness[i][1] + (0.05)*(fitness[i][0] - fitness[i][1]))
+        newfitness.append(fitness[i][0] + fitness[i][1] + (0.25)*abs(fitness[i][0] - fitness[i][1]))
     # else:
     #     for i in range(len(fitness)):
     #         newfitness.append((0.6)*fitness[i][0] + (0.4)*fitness[i][1])

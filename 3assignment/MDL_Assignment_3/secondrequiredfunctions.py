@@ -2,6 +2,10 @@ import json
 import requests
 import numpy as np
 import random
+import os
+
+filename = open("./secondrecords.txt", 'a')
+
 ######### DO NOT CHANGE ANYTHING IN THIS FILE ##################
 API_ENDPOINT = 'http://10.4.21.147'
 PORT = 3000
@@ -49,7 +53,7 @@ def get_fitness(inp, sub):
     for i in inp:
         err = get_errors('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
         res.append(err)
-        if err[0] + err[1] < 5e+7:
+        if err[0] + err[1] < 1e7:
             submit_status = submit('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
             print("submitted")
         co += 1
@@ -64,7 +68,7 @@ def sum_errors(fitness, round):
     
     for i in range(len(fitness)):
         # newfitness.append((0.4)*fitness[i][0] + (0.6)*fitness[i][1])
-        newfitness.append(fitness[i][0] + fitness[i][1] + 0.25*(fitness[i][0] - fitness[i][1]))
+        newfitness.append(fitness[i][0] + fitness[i][1] + 0.25*abs(fitness[i][0] - fitness[i][1]))
     # else:
     #     for i in range(len(fitness)):
     #         newfitness.append((0.6)*fitness[i][0] + (0.4)*fitness[i][1])
@@ -153,7 +157,6 @@ def do_cross(population, req, weight):
         while i == j or track[i][j] == 1:
             i = int(np.random.choice(init,1,p = weight))
             j = int(np.random.choice(init,1,p = weight))
-        print("doing cross for",i, " ",j)
         track[i][j] = 1
         track[j][i] = 1
         new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
@@ -181,6 +184,11 @@ def do_cross(population, req, weight):
         # for h in range(k,11):
         #     new[0][h] = population[j][h]
         if equalflag == 0:
+            print("doing cross for ", co+1, " : ", file=filename)
+            print(population[i], file=filename)
+            print(population[j], file=filename)
+            print("new child due to cross: ", file=filename)
+            print(new[0], file=filename)
             population = np.append(population, new, axis=0)
             co += 1
         else:
@@ -197,12 +205,12 @@ def do_mutate(population, req):
         new[0][k] = (random.random()*random.randrange(-10,10))/pow(10,random.randrange(0,15,1))
         new[0][k] = max(new[0][k],-10)
         new[0][k] = min(new[0][k],10)
-        k = random.randrange(0,10,1)
-        new[0][k] = (random.random()*random.randrange(-10,10))/pow(10,random.randrange(0,15,1))
-        new[0][k] = max(new[0][k],-10)
-        new[0][k] = min(new[0][k],10)
-        print("mutation number :", co," ::")
-        print(new[0])
+        # k = random.randrange(0,10,1)
+        # new[0][k] = (random.random()*random.randrange(-10,10))/pow(10,random.randrange(0,15,1))
+        # new[0][k] = max(new[0][k],-10)
+        # new[0][k] = min(new[0][k],10)
+        print("mutation number :", co," ::", file=filename)
+        print(new[0], file=filename)
         population = np.append(population, new, axis=0)
     
     return population
