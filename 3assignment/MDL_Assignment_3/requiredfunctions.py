@@ -2,6 +2,10 @@ import json
 import requests
 import numpy as np
 import random
+import os
+
+filename = open("./records.txt", 'a')
+
 ######### DO NOT CHANGE ANYTHING IN THIS FILE ##################
 API_ENDPOINT = 'http://10.4.21.147'
 PORT = 3000
@@ -49,7 +53,7 @@ def get_fitness(inp):
     for i in inp:
         err = get_errors('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
         res.append(err)
-        if err[0] + err[1] < 3e+7 and co < len(inp)/3:
+        if err[0] + err[1] < 3e+7:
             submit_status = submit('GsR9ZBabR9AARthD4PSJIurrbm3N60os6gkv9bK2Hu0of2pPaC', list(i))
             print("submitted")
         co += 1
@@ -63,7 +67,7 @@ def sum_errors(fitness, round):
     # if round%2==1:
     for i in range(len(fitness)):
         # newfitness.append((0.4)*fitness[i][0] + (0.6)*fitness[i][1])
-        newfitness.append((0.45)*fitness[i][0] + (0.5)*fitness[i][1])
+        newfitness.append((0.45)*fitness[i][0] + (0.5)*fitness[i][1] + (0.05)*(fitness[i][0] - fitness[i][1]))
     # else:
     #     for i in range(len(fitness)):
     #         newfitness.append((0.6)*fitness[i][0] + (0.4)*fitness[i][1])
@@ -82,8 +86,9 @@ def do_cull(population, fitness, req):
 
 def do_cross(population, req):
     co = 0
+    ltime = 0
     for i in range(int(len(population)/2) + 1):
-        for j in range(i+1,int(len(population)/2) - 8 + i):
+        for j in range(i+1,min(int(len(population)/2) - 8 + i,int(len(population)/2))):
             if i != j:
                 new = np.random.uniform(low=-10.0, high=10.0, size=(1,11))
                 for k in range(11):
@@ -99,11 +104,29 @@ def do_cross(population, req):
                         new[0][k] += random.random()*(random.randrange(-10,10) + random.randrange(-10,10))/pow(8,13)
                     new[0][k] = max(new[0][k],-10)
                     new[0][k] = min(new[0][k],10)
-                population = np.append(population, new, axis=0)
-                co += 1
-                if co >= req:
-                    return population
-    
+                equalflag = 0
+                for d in range(len(population)):
+                    currflag = 1
+                    for e in range(11):
+                        if population[d][e] != new[0][e]:
+                            currflag = 0
+                    if currflag == 1:
+                        equalflag = 1
+                        break
+                if equalflag == 0 or ltime > 10:
+                    print("doing cross no: ",  co+1 ,"for:", file=filename)
+                    print(population[i], file=filename)
+                    print(population[j], file=filename)
+                    population = np.append(population, new, axis=0)
+                    co += 1
+                    print("new child after crossing: ", file=filename)
+                    print(new[0], file=filename)
+                    ltime = 0
+                    if co >= req:
+                        return population
+                else:
+                    ltime += 1
+        
     return population
 
 def do_mutate(population, req):
@@ -115,20 +138,16 @@ def do_mutate(population, req):
         k = random.randrange(0,10,1)
         # new[0][k] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,4,1))
         # new[0][k + 1] += random.random()*random.randrange(-10,10)/pow(10,random.randrange(0,4,1))
-        new[0][k] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(0,8,1))
-        new[0][k + 1] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(0,8,1))
+        new[0][k] = (random.random()*(random.randrange(-10,10)))/pow(10,random.randrange(0,8,1))
         new[0][k] = max(new[0][k],-10)
         new[0][k] = min(new[0][k],10)
-        new[0][k+1] = max(new[0][k+1],-10)
-        new[0][k+1] = min(new[0][k+1],10)
         k = random.randrange(0,10,1)
         #did assignment for early runs. afterwards changed to updation..... updation fucks up
-        new[0][k] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(8,15,1))
-        new[0][k + 1] = (random.random()*(random.randrange(-10,10) + random.randrange(-10,10)))/pow(10,random.randrange(8,15,1))
+        new[0][k] = (random.random()*(random.randrange(-10,10)))/pow(10,random.randrange(8,15,1))
         new[0][k] = max(new[0][k],-10)
         new[0][k] = min(new[0][k],10)
-        new[0][k+1] = max(new[0][k+1],-10)
-        new[0][k+1] = min(new[0][k+1],10)
+        print("new vector due to mutation ", co+1, " : ", file=filename)
+        print(new[0], file=filename)
         population = np.append(population, new, axis=0)
     
     return population
@@ -141,13 +160,11 @@ def do_specialaddition(population, req, mag):
             chpow = 0
             while abs(new[0][l]/pow(10,-chpow)) < 1:
                 chpow += 1
-            for m in range(mag,3 + mag):
-                if l+m > 10:
-                    break
-                lo = random.randrange(-10,10) + random.randrange(-10,10)
-                new[0][l+m] += lo/pow(10,chpow+m)
-                new[0][l+m] = max(new[0][l+m],-10)
-                new[0][l+m] = min(new[0][l+m],10)
+            # for m in range(mag,3 + mag):
+            lo = random.randrange(-10,10) + random.randrange(-10,10)
+            new[0][l] += lo/pow(10,chpow)
+            new[0][l] = max(new[0][l],-10)
+            new[0][l] = min(new[0][l],10)
         population = np.append(population, new, axis=0)
 
     return population
