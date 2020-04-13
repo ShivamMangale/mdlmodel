@@ -10,8 +10,12 @@ x = cpy.Variable(4*60)
 A = npy.zeros(shape=(4*60,60))
 R = npy.zeros(4*60)
 alpha = npy.zeros(60)
+alpha2 = npy.zeros(60)
 alpha[60-1] = 1 #START POSITION FOR LERO
+alpha2[60-1] = 1 #START POSITION FOR LERO
+
 constraints = [x >= 0]
+constraints2 = [x >= 0]#DEBUGAHHHHHHHH
 impossible = []
 policy = []
 ac_d='DODGE'
@@ -78,6 +82,7 @@ def update_term(h,arrow,s):
 def solve():
 	constraints.append(A.T@x == alpha)
 	objective = cpy.Maximize(x@R.T)
+	constraints2.append(A.T@x == alpha2)
 	problem = cpy.Problem(objective, constraints)
 	problem.solve()
 	return problem
@@ -149,6 +154,9 @@ for i in range(4*60):
 		x_mod.append(x[i].value)
 
 policy = create_policy(pol)
+
+if not os.path.exists("outputs"):
+    os.mkdir("outputs")
 final={
 	"a":list(A_mod),
 	"r":list(R_mod),
@@ -158,8 +166,6 @@ final={
 	"objective":problem.value
 }
 
-if not os.path.exists("outputs"):
-    os.mkdir("outputs")
 file="outputs/output.json"
 f = open(file,'w')
 json.dump(final,f)
